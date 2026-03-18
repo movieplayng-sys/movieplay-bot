@@ -8,7 +8,7 @@
     <!-- Telegram Mini App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- YOUR MONETAG SCRIPT - PASTED HERE -->
+    <!-- MONETAG SDK SCRIPT - Your ad network -->
     <script src='//libtl.com/sdk.js' data-zone='10741458' data-sdk='show_10741458'></script>
     
     <style>
@@ -26,12 +26,35 @@
         }
         h1 {
             color: #ffcc00;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #cccccc;
+            margin-bottom: 30px;
         }
         .movie-card {
             background: #2d2d2d;
             border-radius: 12px;
             padding: 20px;
             margin: 20px 0;
+            border: 1px solid #3d3d3d;
+        }
+        .movie-title {
+            color: #ffcc00;
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+        .movie-info {
+            color: #dddddd;
+            margin: 5px 0;
+        }
+        .reward-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px solid #ffcc00;
         }
         button {
             background: #ffcc00;
@@ -43,63 +66,157 @@
             font-weight: bold;
             cursor: pointer;
             margin: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
         }
         .reward-btn {
             background: #00cc88;
+            font-size: 20px;
+            padding: 20px 40px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .close-btn {
+            background: #666666;
+            color: white;
+        }
+        .footer {
+            margin-top: 40px;
+            color: #888888;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎬 MoviePlay</h1>
-        <p>Search movies and earn rewards!</p>
+        <div class="subtitle">Search movies & earn rewards!</div>
         
+        <!-- Movie Info Card -->
         <div class="movie-card">
-            <h2>Featured Movie</h2>
-            <p>Search any movie in @MoviePlay.ngBot</p>
+            <div class="movie-title">The Fast and the Furious (2001)</div>
+            <div class="movie-info">⭐ IMDb: 6.8/10</div>
+            <div class="movie-info">🎭 Genre: Action, Crime, Thriller</div>
+            <div class="movie-info">🎬 Director: Rob Cohen</div>
         </div>
         
-        <!-- Example button to trigger Monetag Rewarded Ad -->
-        <button class="reward-btn" onclick="showRewardedAd()">
-            ⭐ Watch Ad & Get Reward
+        <!-- REWARD SECTION - Monetag Ad Integration -->
+        <div class="reward-section">
+            <h2 style="color: #ffcc00; margin-top: 0;">⭐ Earn Rewards!</h2>
+            <p>Watch a short ad and earn bonus features:</p>
+            
+            <!-- Main Reward Button - Calls Monetag Ad -->
+            <button class="reward-btn" onclick="showRewardedAd()">
+                👆 WATCH AD & GET REWARD
+            </button>
+            
+            <p style="color: #aaaaaa; font-size: 14px; margin-top: 15px;">
+                • Unlock exclusive content<br>
+                • Get extra movie searches<br>
+                • Support MoviePlay
+            </p>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <button onclick="window.Telegram.WebApp.close()" class="close-btn">
+            Close Mini App
         </button>
         
-        <button onclick="window.Telegram.WebApp.close()">
-            Close
-        </button>
+        <div class="footer">
+            © 2026 MoviePlay.ngBot
+        </div>
     </div>
 
     <script>
         // Initialize Telegram Mini App
         const tg = window.Telegram.WebApp;
         tg.expand(); // Make app full screen
+        tg.ready();  // Notify Telegram that app is ready
         
-        // Function to show Monetag rewarded ad
+        console.log('Mini App loaded, Telegram SDK ready');
+        
+        // Check if Monetag SDK is loaded
+        console.log('Monetag SDK available:', typeof show_10741458 === 'function');
+        
+        /**
+         * REWARDED AD FUNCTION
+         * This calls Monetag's rewarded interstitial ad
+         * User gets reward AFTER watching the complete ad
+         */
         function showRewardedAd() {
-            if (typeof show_10741458 === 'function') {
-                show_10741458().then(() => {
-                    // User watched the ad - give reward
-                    alert('🎉 Thanks! You earned 10 coins!');
-                    console.log('Reward granted');
-                }).catch(error => {
-                    alert('Ad failed to load. Try again.');
-                    console.error('Ad error:', error);
-                });
-            } else {
-                alert('Ad SDK not ready yet');
-                console.log('Monetag SDK loading...');
+            console.log('Reward button clicked - attempting to show ad');
+            
+            // Check if Monetag function exists
+            if (typeof show_10741458 !== 'function') {
+                alert('Ad system loading... Please try again in a moment.');
+                console.error('Monetag SDK not ready yet');
+                return;
             }
+            
+            // Show loading state on button
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ Loading ad...';
+            btn.disabled = true;
+            
+            // Call Monetag rewarded ad function
+            show_10741458()
+                .then(() => {
+                    // THIS RUNS AFTER USER COMPLETES THE AD
+                    console.log('✅ Ad completed successfully - rewarding user');
+                    
+                    // Reset button
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    
+                    // Show success message (Telegram style)
+                    tg.showPopup({
+                        title: '🎉 Reward Earned!',
+                        message: 'Thanks for watching! You earned 10 MoviePoints.',
+                        buttons: [{type: 'ok'}]
+                    });
+                    
+                    // You can add your actual reward logic here:
+                    // - Update user balance in database
+                    // - Unlock premium features
+                    // - Give extra searches
+                    // Example: updateUserRewards(10);
+                    
+                })
+                .catch((error) => {
+                    // THIS RUNS IF AD FAILS TO LOAD OR USER CLOSES EARLY
+                    console.error('❌ Ad failed:', error);
+                    
+                    // Reset button
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    
+                    // Show error message
+                    tg.showPopup({
+                        title: 'Ad Not Available',
+                        message: 'Please try again later.',
+                        buttons: [{type: 'ok'}]
+                    });
+                });
         }
         
-        // Optional: Auto-load an interstitial ad
-        if (typeof show_10741458 === 'function') {
-            // Show interstitial after 10 seconds (example)
-            setTimeout(() => {
+        // Optional: Preload an interstitial ad after 10 seconds
+        setTimeout(() => {
+            if (typeof show_10741458 === 'function') {
+                // Show non-rewarded interstitial ad
                 show_10741458({ type: 'inApp' }).catch(() => {});
-            }, 10000);
-        }
+            }
+        }, 10000);
         
-        console.log('Mini App loaded with Monetag');
+        // Log when Telegram WebApp is closed
+        tg.onEvent('viewportChanged', () => {
+            console.log('Viewport changed');
+        });
     </script>
 </body>
 </html>
