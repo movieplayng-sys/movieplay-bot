@@ -3,220 +3,554 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoviePlay Mini App</title>
+    <title>MoviePlay - Complete Movie System</title>
     
-    <!-- Telegram Mini App SDK -->
+    <!-- Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- MONETAG SDK SCRIPT - Your ad network -->
+    <!-- Monetag SDK -->
     <script src='//libtl.com/sdk.js' data-zone='10741458' data-sdk='show_10741458'></script>
     
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #1a1a1a;
-            color: white;
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            padding: 30px 20px;
             text-align: center;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #ffcc00;
+        
+        .header h1 {
             font-size: 32px;
+            color: #1a1a1a;
             margin-bottom: 10px;
         }
-        .subtitle {
-            color: #cccccc;
-            margin-bottom: 30px;
+        
+        .header p {
+            color: #1a1a1a;
+            opacity: 0.9;
         }
+        
+        .search-section {
+            padding: 20px;
+            background: #1a1a1a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: #2d2d2d;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .search-box input::placeholder {
+            color: #666;
+        }
+        
+        .search-box button {
+            padding: 15px 25px;
+            background: #ffcc00;
+            border: none;
+            border-radius: 12px;
+            color: #1a1a1a;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .filter-chip {
+            padding: 10px 20px;
+            background: #2d2d2d;
+            border-radius: 25px;
+            color: #ddd;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-chip.active {
+            background: #ffcc00;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+        
+        .video-player-section {
+            padding: 20px;
+            background: #000;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        video {
+            width: 100%;
+            max-height: 400px;
+            background: #000;
+        }
+        
+        .video-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .play-btn {
+            background: #ffcc00;
+            color: #1a1a1a;
+        }
+        
+        .download-btn {
+            background: #00cc88;
+            color: #1a1a1a;
+        }
+        
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        
         .movie-card {
             background: #2d2d2d;
             border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            border: 1px solid #3d3d3d;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-        .movie-title {
-            color: #ffcc00;
-            font-size: 24px;
-            margin: 0 0 10px 0;
+        
+        .movie-card:hover {
+            transform: scale(1.05);
         }
+        
+        .movie-poster {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+        }
+        
         .movie-info {
-            color: #dddddd;
-            margin: 5px 0;
+            padding: 10px;
         }
-        .reward-section {
-            background: #2d2d2d;
+        
+        .movie-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .movie-year {
+            color: #ffcc00;
+            font-size: 12px;
+        }
+        
+        .ad-banner {
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
             border-radius: 12px;
-            padding: 25px;
-            margin: 30px 0;
-            border: 2px solid #ffcc00;
+            text-align: center;
+            border: 1px solid #ffcc00;
         }
-        button {
+        
+        .ad-button {
             background: #ffcc00;
             color: #1a1a1a;
             border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 18px;
+            padding: 15px 40px;
+            border-radius: 30px;
             font-weight: bold;
+            font-size: 18px;
+            margin: 15px 0;
             cursor: pointer;
-            margin: 10px;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            transform: scale(1.05);
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        .reward-btn {
-            background: #00cc88;
-            font-size: 20px;
-            padding: 20px 40px;
             width: 100%;
             max-width: 300px;
         }
-        .close-btn {
-            background: #666666;
-            color: white;
+        
+        .reward-section {
+            background: #2d2d2d;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+            text-align: center;
         }
-        .footer {
-            margin-top: 40px;
-            color: #888888;
-            font-size: 12px;
+        
+        .reward-points {
+            font-size: 24px;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ff4444;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 600px) {
+            .movie-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <h1>🎬 MoviePlay</h1>
-        <div class="subtitle">Search movies & earn rewards!</div>
-        
-        <!-- Movie Info Card -->
-        <div class="movie-card">
-            <div class="movie-title">The Fast and the Furious (2001)</div>
-            <div class="movie-info">⭐ IMDb: 6.8/10</div>
-            <div class="movie-info">🎭 Genre: Action, Crime, Thriller</div>
-            <div class="movie-info">🎬 Director: Rob Cohen</div>
+        <p>Watch • Download • Earn</p>
+    </div>
+    
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search movies... (e.g., Love, Korean, 2026, series)">
+            <button onclick="searchMovies()">Search</button>
         </div>
         
-        <!-- REWARD SECTION - Monetag Ad Integration -->
-        <div class="reward-section">
-            <h2 style="color: #ffcc00; margin-top: 0;">⭐ Earn Rewards!</h2>
-            <p>Watch a short ad and earn bonus features:</p>
-            
-            <!-- Main Reward Button - Calls Monetag Ad -->
-            <button class="reward-btn" onclick="showRewardedAd()">
-                👆 WATCH AD & GET REWARD
+        <div class="filters" id="filters">
+            <div class="filter-chip active" onclick="filterBy('all')">All</div>
+            <div class="filter-chip" onclick="filterBy('movie')">Movies</div>
+            <div class="filter-chip" onclick="filterBy('series')">Series</div>
+            <div class="filter-chip" onclick="filterBy('2026')">2026</div>
+            <div class="filter-chip" onclick="filterBy('korean')">Korean</div>
+            <div class="filter-chip" onclick="filterBy('action')">Action</div>
+        </div>
+    </div>
+    
+    <!-- Video Player Section -->
+    <div class="video-player-section" id="videoPlayer" style="display: none;">
+        <div class="video-container">
+            <video id="mainVideo" controls>
+                <source src="" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+        </div>
+        <div class="video-controls">
+            <button class="control-btn play-btn" onclick="playCurrentVideo()">
+                ▶ Play
             </button>
-            
-            <p style="color: #aaaaaa; font-size: 14px; margin-top: 15px;">
-                • Unlock exclusive content<br>
-                • Get extra movie searches<br>
-                • Support MoviePlay
-            </p>
+            <button class="control-btn download-btn" onclick="downloadCurrentVideo()">
+                ⬇ Download
+            </button>
         </div>
-        
-        <!-- Navigation Buttons -->
-        <button onclick="window.Telegram.WebApp.close()" class="close-btn">
-            Close Mini App
+    </div>
+    
+    <!-- Ad Banner (Auto-appears) -->
+    <div class="ad-banner" id="autoAd" style="display: none;">
+        <h3>✨ Support MoviePlay</h3>
+        <p>Watch a quick ad to unlock HD streaming and downloads</p>
+        <button class="ad-button" onclick="showRewardedAd()">
+            ⭐ WATCH AD & UNLOCK
         </button>
-        
-        <div class="footer">
-            © 2026 MoviePlay.ngBot
-        </div>
+    </div>
+    
+    <!-- Movie Grid -->
+    <div class="movie-grid" id="movieGrid">
+        <!-- Movies will be loaded here -->
+        <div class="loading">Loading movies...</div>
+    </div>
+    
+    <!-- Reward Section -->
+    <div class="reward-section" id="rewardSection" style="display: none;">
+        <div class="reward-points" id="rewardPoints">0</div>
+        <p>MoviePoints earned</p>
+        <button class="ad-button" onclick="showRewardedAd()">
+            ⭐ Watch Ad & Earn More
+        </button>
     </div>
 
     <script>
         // Initialize Telegram Mini App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Make app full screen
-        tg.ready();  // Notify Telegram that app is ready
+        tg.expand();
+        tg.ready();
         
-        console.log('Mini App loaded, Telegram SDK ready');
+        let currentVideoUrl = '';
+        let currentVideoTitle = '';
+        let userPoints = 0;
         
-        // Check if Monetag SDK is loaded
-        console.log('Monetag SDK available:', typeof show_10741458 === 'function');
-        
-        /**
-         * REWARDED AD FUNCTION
-         * This calls Monetag's rewarded interstitial ad
-         * User gets reward AFTER watching the complete ad
-         */
-        function showRewardedAd() {
-            console.log('Reward button clicked - attempting to show ad');
-            
-            // Check if Monetag function exists
-            if (typeof show_10741458 !== 'function') {
-                alert('Ad system loading... Please try again in a moment.');
-                console.error('Monetag SDK not ready yet');
-                return;
+        // Sample movie database (replace with your actual database)
+        const movies = [
+            {
+                id: 1,
+                title: "Love in Seoul",
+                year: 2026,
+                country: "Korea",
+                type: "series",
+                genre: "Romance, Drama",
+                poster: "https://via.placeholder.com/300x450?text=Love+in+Seoul",
+                videoUrl: "https://example.com/video1.mp4",
+                downloadUrl: "https://example.com/download1.mp4"
+            },
+            {
+                id: 2,
+                title: "Korean Dream",
+                year: 2026,
+                country: "Korea",
+                type: "movie",
+                genre: "Drama",
+                poster: "https://via.placeholder.com/300x450?text=Korean+Dream",
+                videoUrl: "https://example.com/video2.mp4",
+                downloadUrl: "https://example.com/download2.mp4"
+            },
+            {
+                id: 3,
+                title: "Action Hero",
+                year: 2025,
+                country: "USA",
+                type: "movie",
+                genre: "Action",
+                poster: "https://via.placeholder.com/300x450?text=Action+Hero",
+                videoUrl: "https://example.com/video3.mp4",
+                downloadUrl: "https://example.com/download3.mp4"
             }
+        ];
+        
+        // Load movies on startup
+        window.addEventListener('load', () => {
+            displayMovies(movies);
             
-            // Show loading state on button
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = '⏳ Loading ad...';
-            btn.disabled = true;
+            // Show auto ad after 5 seconds
+            setTimeout(() => {
+                document.getElementById('autoAd').style.display = 'block';
+            }, 5000);
             
-            // Call Monetag rewarded ad function
-            show_10741458()
-                .then(() => {
-                    // THIS RUNS AFTER USER COMPLETES THE AD
-                    console.log('✅ Ad completed successfully - rewarding user');
-                    
-                    // Reset button
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    
-                    // Show success message (Telegram style)
-                    tg.showPopup({
-                        title: '🎉 Reward Earned!',
-                        message: 'Thanks for watching! You earned 10 MoviePoints.',
-                        buttons: [{type: 'ok'}]
-                    });
-                    
-                    // You can add your actual reward logic here:
-                    // - Update user balance in database
-                    // - Unlock premium features
-                    // - Give extra searches
-                    // Example: updateUserRewards(10);
-                    
-                })
-                .catch((error) => {
-                    // THIS RUNS IF AD FAILS TO LOAD OR USER CLOSES EARLY
-                    console.error('❌ Ad failed:', error);
-                    
-                    // Reset button
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    
-                    // Show error message
-                    tg.showPopup({
-                        title: 'Ad Not Available',
-                        message: 'Please try again later.',
-                        buttons: [{type: 'ok'}]
-                    });
-                });
+            // Check if Monetag SDK loaded
+            if (typeof show_10741458 === 'function') {
+                console.log('Monetag SDK loaded');
+                // Preload an ad
+                setTimeout(() => {
+                    show_10741458({ type: 'inApp' }).catch(() => {});
+                }, 10000);
+            }
+        });
+        
+        function displayMovies(movieList) {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '';
+            
+            movieList.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.onclick = () => selectMovie(movie);
+                
+                card.innerHTML = `
+                    <img src="${movie.poster}" class="movie-poster" alt="${movie.title}">
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-year">${movie.year} • ${movie.country} • ${movie.type}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
         }
         
-        // Optional: Preload an interstitial ad after 10 seconds
-        setTimeout(() => {
+        function selectMovie(movie) {
+            currentVideoUrl = movie.videoUrl;
+            currentVideoTitle = movie.title;
+            
+            // Show video player
+            document.getElementById('videoPlayer').style.display = 'block';
+            const video = document.getElementById('mainVideo');
+            video.src = movie.videoUrl;
+            
+            // Show auto ad
             if (typeof show_10741458 === 'function') {
-                // Show non-rewarded interstitial ad
                 show_10741458({ type: 'inApp' }).catch(() => {});
             }
-        }, 10000);
+            
+            // Scroll to video player
+            document.getElementById('videoPlayer').scrollIntoView({ behavior: 'smooth' });
+        }
         
-        // Log when Telegram WebApp is closed
-        tg.onEvent('viewportChanged', () => {
-            console.log('Viewport changed');
+        function playCurrentVideo() {
+            const video = document.getElementById('mainVideo');
+            video.play();
+        }
+        
+        function downloadCurrentVideo() {
+            if (currentVideoUrl) {
+                // Create download link
+                const link = document.createElement('a');
+                link.href = currentVideoUrl;
+                link.download = currentVideoTitle + '.mp4';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Show ad after download starts
+                if (typeof show_10741458 === 'function') {
+                    show_10741458().then(() => {
+                        userPoints += 10;
+                        updateRewardDisplay();
+                    }).catch(() => {});
+                }
+            }
+        }
+        
+        function searchMovies() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Parse search query (e.g., "Love, Korean, 2026, series")
+            const terms = query.split(',').map(term => term.trim());
+            
+            const filtered = movies.filter(movie => {
+                return terms.every(term => {
+                    if (term === '') return true;
+                    if (term === 'movie') return movie.type === 'movie';
+                    if (term === 'series') return movie.type === 'series';
+                    if (!isNaN(term)) return movie.year == term;
+                    return movie.title.toLowerCase().includes(term) ||
+                           movie.country.toLowerCase().includes(term) ||
+                           movie.genre.toLowerCase().includes(term);
+                });
+            });
+            
+            displayMovies(filtered);
+            
+            // Show ad after search
+            if (typeof show_10741458 === 'function') {
+                show_10741458({ type: 'inApp' }).catch(() => {});
+            }
+        }
+        
+        function filterBy(category) {
+            // Update active chip
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filtered = movies;
+            
+            switch(category) {
+                case 'movie':
+                    filtered = movies.filter(m => m.type === 'movie');
+                    break;
+                case 'series':
+                    filtered = movies.filter(m => m.type === 'series');
+                    break;
+                case '2026':
+                    filtered = movies.filter(m => m.year === 2026);
+                    break;
+                case 'korean':
+                    filtered = movies.filter(m => m.country === 'Korea');
+                    break;
+                case 'action':
+                    filtered = movies.filter(m => m.genre.includes('Action'));
+                    break;
+                default:
+                    filtered = movies;
+            }
+            
+            displayMovies(filtered);
+        }
+        
+        function showRewardedAd() {
+            if (typeof show_10741458 === 'function') {
+                show_10741458()
+                    .then(() => {
+                        // Ad watched successfully
+                        userPoints += 50;
+                        updateRewardDisplay();
+                        
+                        tg.showPopup({
+                            title: '🎉 Reward Earned!',
+                            message: 'You earned 50 MoviePoints!',
+                            buttons: [{type: 'ok'}]
+                        });
+                        
+                        // Unlock premium features
+                        document.querySelectorAll('.download-btn').forEach(btn => {
+                            btn.style.opacity = '1';
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Ad failed:', error);
+                        tg.showPopup({
+                            title: 'Ad Not Available',
+                            message: 'Please try again later.',
+                            buttons: [{type: 'ok'}]
+                        });
+                    });
+            } else {
+                alert('Ad system loading...');
+            }
+        }
+        
+        function updateRewardDisplay() {
+            document.getElementById('rewardPoints').textContent = userPoints;
+            document.getElementById('rewardSection').style.display = 'block';
+        }
+        
+        // Handle Telegram back button
+        tg.onEvent('backButtonClicked', () => {
+            document.getElementById('videoPlayer').style.display = 'none';
+            document.getElementById('mainVideo').pause();
+            tg.BackButton.hide();
         });
+        
+        console.log('MoviePlay Mini App loaded');
     </script>
 </body>
 </html>
